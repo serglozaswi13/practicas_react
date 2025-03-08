@@ -12,7 +12,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
 function createData(nombre, apellido, edad) {
-  return { nombre, apellido, edad};
+  return { nombre, apellido, edad };
 }
 
 const rows = [
@@ -25,6 +25,10 @@ const rows = [
 
 function App() {
   const [count, setCount] = useState(0);
+  const [users, setUsers] = useState([]); 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
 
   useEffect(() => {
     if (count > 10) {
@@ -32,6 +36,19 @@ function App() {
       setCount(10);
     }
   }, [count]);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/users")
+      .then((response) => response.json())
+      .then((data) => {
+        setUsers(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <>
@@ -49,32 +66,57 @@ function App() {
         <button onClick={() => setCount(0)}>Resetear</button>
       </div>
 
-      
+     
+      <h2>Lista de Datos Estáticos</h2>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>Nombre</TableCell>
-              <TableCell align="right">Appellido</TableCell>
+              <TableCell align="right">Apellido</TableCell>
               <TableCell align="right">Edad</TableCell>
-              
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.nombre} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                <TableCell component="th" scope="row">
-                  {row.nombre}
-                </TableCell>
+                <TableCell component="th" scope="row">{row.nombre}</TableCell>
                 <TableCell align="right">{row.apellido}</TableCell>
                 <TableCell align="right">{row.edad}</TableCell>
-                
-                
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      
+      <h2>Lista de Usuarios (API)</h2>
+
+      {loading && <p>Cargando usuarios...</p>}
+      {error && <p>Error: {error}</p>}
+
+      {!loading && !error && (
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Nombre</TableCell>
+                <TableCell align="right">Usuario</TableCell>
+                <TableCell align="right">Email</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell align="right">{user.username}</TableCell>
+                  <TableCell align="right">{user.email}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
     </>
